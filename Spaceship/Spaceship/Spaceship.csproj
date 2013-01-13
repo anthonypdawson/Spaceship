@@ -118,7 +118,7 @@
     <Content Include="GameThumbnail.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\TextureLoader\TextureLoader\ContentHelper.csproj">
+    <ProjectReference Include="..\..\ContentHelper\ContentHelper.csproj">
       <Project>{90b0e629-1018-44a4-a431-ea7aaef3fc35}</Project>
       <Name>ContentHelper</Name>
     </ProjectReference>
