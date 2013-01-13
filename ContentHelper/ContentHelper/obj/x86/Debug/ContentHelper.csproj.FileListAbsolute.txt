@@ -1,0 +1,5 @@
+C:\Users\ayd\src\games\TextureLoader\TextureLoader\bin\x86\Debug\TextureLoader.dll
+C:\Users\ayd\src\games\TextureLoader\TextureLoader\bin\x86\Debug\TextureLoader.pdb
+C:\Users\ayd\src\games\TextureLoader\TextureLoader\obj\x86\Debug\Microsoft.Xna.Framework.RuntimeProfile.txt
+C:\Users\ayd\src\games\TextureLoader\TextureLoader\obj\x86\Debug\TextureLoader.dll
+C:\Users\ayd\src\games\TextureLoader\TextureLoader\obj\x86\Debug\TextureLoader.pdb
