@@ -28,6 +28,8 @@ namespace Spaceship
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
+            this.IsFixedTimeStep = false;
+
         }
 
         /// <summary>
@@ -52,7 +54,7 @@ namespace Spaceship
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             _loader = new TextureLoader(graphics.GraphicsDevice, false, "Content");
-            ship = new Ship(_loader.FromFile("spaceship.png"), spriteBatch, new Vector2(1, 1), 64, 64);
+            ship = new Ship(_loader.FromFile("spaceship.png"), spriteBatch, new Vector2(20, 20), 5, 64, 64);
         }
 
         /// <summary>
@@ -71,10 +73,15 @@ namespace Spaceship
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
+            Clock.SetClock(gameTime);
+
             var keys = Keyboard.GetState().GetPressedKeys();
+
+            // Allows the game to exit
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keys.Contains(Keys.Escape))
+                this.Exit();
+
+
             if (keys.Contains(Keys.Left))
             {
                 ship.AddLeft();
@@ -105,9 +112,21 @@ namespace Spaceship
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
+            Clock.SetClock(gameTime);
+
             // TODO: Add your drawing code here
             ship.Draw();
             base.Draw(gameTime);
+        }
+    }
+
+    public static class Clock
+    {
+        public static GameTime GameTime;
+
+        public static void SetClock(GameTime gameTime)
+        {
+            Clock.GameTime = gameTime;
         }
     }
 }

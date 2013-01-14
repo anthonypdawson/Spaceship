@@ -12,15 +12,42 @@ namespace Spaceship.Entities
         SpriteBatch _spriteBatch;
         Texture2D _texture;
 
-        Vector2 _location;
+        State _state;
+        Vector2 _location, _velocity;
+        float _maxSpeed, _momentum;
+        int _height, _width;
 
-        int _velocity_x;
-        int _velocity_y;
+        float _velocityX
+        {
+            get
+            {
+                return _velocity.X;
+            }
+            set
+            {
+                if (value == _velocity.X)
+                    return;
 
-        int _height;
-        int _width;
+                _velocity.X = CheckVelocity(value);
+            }
+        }
+        float _velocityY
+        {
+            get
+            {
+                return _velocity.Y;
+            }
+            set
+            {
+                if (value == _velocity.Y)
+                    return;
 
-        protected Entity(Texture2D texture, SpriteBatch spriteBatch, Vector2 velocity, int height = 0, int width = 0)
+                _velocity.Y = CheckVelocity(value);
+            }
+        }
+
+
+        protected Entity(Texture2D texture, SpriteBatch spriteBatch, Vector2 velocity, float momentum = 10, int height = 0, int width = 0)
         {
             _texture = texture;
             SetVelocity(velocity);
@@ -28,6 +55,8 @@ namespace Spaceship.Entities
 
             _height = height == 0 ? _texture.Height : height;
             _width = width == 0 ? _texture.Width : width;
+            _maxSpeed = 100;
+            _momentum = momentum;
         }
 
         protected Entity(Texture2D texture, SpriteBatch spriteBatch)
@@ -38,8 +67,12 @@ namespace Spaceship.Entities
 
         public void Update()
         {
-            _location.X += (_velocity_x / 10);
-            _location.Y += (_velocity_y / 10);
+            if (Velocity != new Vector2(0, 0))
+                _state = State.Moving;
+            else
+                _state = State.Idle;
+
+            UpdateLocation(Velocity);
         }
 
         public void Draw(SpriteBatch spriteBatch = null)
@@ -53,38 +86,70 @@ namespace Spaceship.Entities
             spriteBatch.End();
         }
 
+        public Vector2 Velocity
+        {
+            get
+            {
+                return _velocity * (float)Clock.GameTime.ElapsedGameTime.TotalSeconds;
+            }
+        }
+
         public void AddLeft()
         {
-            _velocity_x--;
+            _velocityX -= _momentum;
         }
 
         public void AddRight()
         {
-            _velocity_x++;
+            _velocityX += _momentum;
         }
 
         public void AddUp()
         {
-            _velocity_y--;
+            _velocityY -= _momentum;
         }
 
         public void AddDown()
         {
-            _velocity_y++;
+            _velocityY += _momentum;
         }
 
         private Tuple<float, SpriteEffects> GetAngle()
         {
-            if (_velocity_y > 10)
-            {
-                return new Tuple<float, SpriteEffects>(-1, SpriteEffects.FlipVertically);
-            }
             return new Tuple<float, SpriteEffects>(1, SpriteEffects.None);
         }
+
         private void SetVelocity(Vector2 velocity)
         {
-            _velocity_x = (int)velocity.X;
-            _velocity_y = (int)velocity.Y;
+            _velocity = velocity;
         }
+
+        private void UpdateLocation(Vector2 velocity)
+        {
+            _location += velocity;
+        }
+
+        private float CheckVelocity(float value)
+        {
+            var maxSpeed = _maxSpeed;
+
+            if (value < 0)
+            {
+                maxSpeed *= -1;
+                if (value < maxSpeed)
+                    return maxSpeed;
+                return value;
+            }
+
+            if (value > maxSpeed)
+                return maxSpeed;
+            return value;
+        }
+    }
+
+    public enum State
+    {
+        Idle,
+        Moving
     }
 }
