@@ -1,15 +1,9 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
+using ContentHelper;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 using Spaceship.Entities;
-using ContentHelper;
 
 namespace Spaceship
 {
@@ -28,7 +22,7 @@ namespace Spaceship
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            this.IsFixedTimeStep = false;
+            IsFixedTimeStep = false;
 
         }
 
@@ -73,7 +67,7 @@ namespace Spaceship
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            Clock.SetClock(gameTime);
+            Global.SetClock(gameTime);
 
             var keys = Keyboard.GetState().GetPressedKeys();
 
@@ -112,7 +106,7 @@ namespace Spaceship
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            Clock.SetClock(gameTime);
+            Global.SetClock(gameTime);
 
             // TODO: Add your drawing code here
             ship.Draw();
@@ -120,13 +114,23 @@ namespace Spaceship
         }
     }
 
-    public static class Clock
+    public static class Global
     {
         public static GameTime GameTime;
 
+        public static int Height
+        {
+            get { return GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height; }
+        }
+
+        public static int Width
+        {
+            get { return GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width; }
+        }
+
         public static void SetClock(GameTime gameTime)
         {
-            Clock.GameTime = gameTime;
+            GameTime = gameTime;
         }
     }
 }

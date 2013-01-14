@@ -1,21 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Spaceship.Entities
 {
-    class Entity
+    public class Entity
     {
-        SpriteBatch _spriteBatch;
-        Texture2D _texture;
+        protected SpriteBatch SpriteBatch;
+        protected Texture2D Texture;
 
-        State _state;
-        Vector2 _location, _velocity;
-        float _maxSpeed, _momentum;
-        int _height, _width;
+        protected State _state;
+        private Vector2 _location;
+        protected Vector2 _velocity;
+        protected float _maxSpeed;
+        protected float _momentum;
+        protected int _height, _width;
+
+        public Vector2 Location
+        {
+            get { return _location; }
+            set { _location = value; }
+        }
 
         float _velocityX
         {
@@ -23,14 +28,9 @@ namespace Spaceship.Entities
             {
                 return _velocity.X;
             }
-            set
-            {
-                if (value == _velocity.X)
-                    return;
-
-                _velocity.X = CheckVelocity(value);
-            }
+            set { _velocity.X = value; }
         }
+
         float _velocityY
         {
             get
@@ -39,27 +39,24 @@ namespace Spaceship.Entities
             }
             set
             {
-                if (value == _velocity.Y)
-                    return;
-
-                _velocity.Y = CheckVelocity(value);
+                _velocity.Y = value;
             }
         }
 
 
-        protected Entity(Texture2D texture, SpriteBatch spriteBatch, Vector2 velocity, float momentum = 10, int height = 0, int width = 0)
+        public Entity(Texture2D texture, SpriteBatch spriteBatch, Vector2 velocity, float momentum = 10, int height = 0, int width = 0)
         {
-            _texture = texture;
+            Texture = texture;
             SetVelocity(velocity);
-            _spriteBatch = spriteBatch;
+            SpriteBatch = spriteBatch;
 
-            _height = height == 0 ? _texture.Height : height;
-            _width = width == 0 ? _texture.Width : width;
+            _height = height == 0 ? Texture.Height : height;
+            _width = width == 0 ? Texture.Width : width;
             _maxSpeed = 100;
             _momentum = momentum;
         }
 
-        protected Entity(Texture2D texture, SpriteBatch spriteBatch)
+        public Entity(Texture2D texture, SpriteBatch spriteBatch)
             : this(texture, spriteBatch, new Vector2(0, 0))
         {
 
@@ -67,7 +64,7 @@ namespace Spaceship.Entities
 
         public void Update()
         {
-            if (Velocity != new Vector2(0, 0))
+            if(Velocity != new Vector2(0, 0))
                 _state = State.Moving;
             else
                 _state = State.Idle;
@@ -77,11 +74,11 @@ namespace Spaceship.Entities
 
         public void Draw(SpriteBatch spriteBatch = null)
         {
-            spriteBatch = spriteBatch ?? _spriteBatch;
+            spriteBatch = spriteBatch ?? SpriteBatch;
 
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
 
-            spriteBatch.Draw(_texture, new Rectangle((int)_location.X, (int)_location.Y, _width, _height), Color.White);
+            spriteBatch.Draw(Texture, new Rectangle((int)Location.X, (int)Location.Y, _width, _height), Color.White);
 
             spriteBatch.End();
         }
@@ -90,7 +87,7 @@ namespace Spaceship.Entities
         {
             get
             {
-                return _velocity * (float)Clock.GameTime.ElapsedGameTime.TotalSeconds;
+                return _velocity * (float)Global.GameTime.ElapsedGameTime.TotalSeconds;
             }
         }
 
@@ -126,25 +123,10 @@ namespace Spaceship.Entities
 
         private void UpdateLocation(Vector2 velocity)
         {
-            _location += velocity;
+            Location += velocity;
         }
 
-        private float CheckVelocity(float value)
-        {
-            var maxSpeed = _maxSpeed;
 
-            if (value < 0)
-            {
-                maxSpeed *= -1;
-                if (value < maxSpeed)
-                    return maxSpeed;
-                return value;
-            }
-
-            if (value > maxSpeed)
-                return maxSpeed;
-            return value;
-        }
     }
 
     public enum State
