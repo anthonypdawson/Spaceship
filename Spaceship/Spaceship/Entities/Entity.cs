@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -6,21 +7,30 @@ namespace Spaceship.Entities
 {
     public class Entity
     {
-        protected SpriteBatch SpriteBatch;
         protected Texture2D Texture;
 
-        protected State _state;
-        private Vector2 _location;
+        public State State;
         protected Vector2 _velocity;
-        protected float _maxSpeed;
-        protected float _momentum;
+
+        public float Drag;
+        public float MaxSpeed;
+        public float Acceleration;
+
+        public float Momentum
+        {
+            get
+            {
+                return new[]
+                {
+                    _velocity.X,
+                    _velocity.Y
+                }.Average() * Mass;
+            }
+        }
+        public float Mass;
         protected int _height, _width;
 
-        public Vector2 Location
-        {
-            get { return _location; }
-            set { _location = value; }
-        }
+        public Vector2 Location { get; set; }
 
         float _velocityX
         {
@@ -44,37 +54,33 @@ namespace Spaceship.Entities
         }
 
 
-        public Entity(Texture2D texture, SpriteBatch spriteBatch, Vector2 velocity, float momentum = 10, int height = 0, int width = 0)
+        public Entity(Texture2D texture, Vector2 velocity, float mass = 10, int height = 0, int width = 0)
         {
             Texture = texture;
             SetVelocity(velocity);
-            SpriteBatch = spriteBatch;
 
             _height = height == 0 ? Texture.Height : height;
             _width = width == 0 ? Texture.Width : width;
-            _maxSpeed = 100;
-            _momentum = momentum;
+            MaxSpeed = 100;
+            Mass = mass;
+            Acceleration = 4f;
+            Drag = 3f;
         }
 
         public Entity(Texture2D texture, SpriteBatch spriteBatch)
-            : this(texture, spriteBatch, new Vector2(0, 0))
+            : this(texture, new Vector2(0, 0))
         {
 
         }
 
         public void Update()
         {
-            if(Velocity != new Vector2(0, 0))
-                _state = State.Moving;
-            else
-                _state = State.Idle;
-
             UpdateLocation(Velocity);
         }
 
         public void Draw(SpriteBatch spriteBatch = null)
         {
-            spriteBatch = spriteBatch ?? SpriteBatch;
+            spriteBatch = spriteBatch ?? GameState.SpriteBatch;
 
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
 
@@ -87,28 +93,29 @@ namespace Spaceship.Entities
         {
             get
             {
-                return _velocity * (float)Global.GameTime.ElapsedGameTime.TotalSeconds;
+                return _velocity * (float)GameState.GameTime.ElapsedGameTime.TotalSeconds;
             }
+            set { _velocity = value; }
         }
 
         public void AddLeft()
         {
-            _velocityX -= _momentum;
+            _velocityX -= _velocityX > 0 ? (Acceleration * Drag) : Acceleration;
         }
 
         public void AddRight()
         {
-            _velocityX += _momentum;
+            _velocityX += _velocityX < 0 ? (Acceleration * Drag) : Acceleration;
         }
 
         public void AddUp()
         {
-            _velocityY -= _momentum;
+            _velocityY -= _velocityY > 0 ? (Acceleration * Drag) : Acceleration;
         }
 
         public void AddDown()
         {
-            _velocityY += _momentum;
+            _velocityY += _velocityY < 0 ? (Acceleration * Drag) : Acceleration;
         }
 
         private Tuple<float, SpriteEffects> GetAngle()

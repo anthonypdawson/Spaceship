@@ -4,27 +4,17 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Spaceship.Entities
 {
     class Ship : Entity
-    {
-        public Ship(Texture2D texture, SpriteBatch spriteBatch, Vector2 velocity, float momentum = 10, int height = 0, int width = 0)
-            : base(texture, spriteBatch, velocity, momentum, height, width)
-        {
-        }
+    {        
 
-        public Ship(Texture2D texture, SpriteBatch spriteBatch)
-            : base(texture, spriteBatch, new Vector2(0, 0))
-        {
-
-        }
-
-        private Entity Double;
+        private Entity _double;
 
         private int Height
         {
-            get { return Texture.Height; }
+            get { return _height; }
         }
         private int Width
         {
-            get { return Texture.Width; }
+            get { return _width; }
         }
 
         float _velocityX
@@ -35,7 +25,7 @@ namespace Spaceship.Entities
             }
             set
             {
-                if(value == _velocity.X)
+                if(value.Equals(_velocity.X))
                     return;
 
                 _velocity.X = CheckVelocity(value);
@@ -49,76 +39,92 @@ namespace Spaceship.Entities
             }
             set
             {
-                if(value == _velocity.Y)
+                if(value.Equals(_velocity.Y))
                     return;
 
                 _velocity.Y = CheckVelocity(value);
             }
         }
+        public Ship(Texture2D texture, Vector2 velocity, float mass = 10, int height = 0, int width = 0)
+            : base(texture, velocity, mass, height, width)
+        {
+            
+        }
+
+        public new void Update()
+        {
+            base.Update();
+
+            if ((_double = CheckLocation(Location)) != null)
+            {
+               _double.Update();
+            }
+                
+        }
 
         public new void Draw(SpriteBatch spriteBatch=null)
         {
-            base.Draw(spriteBatch);
-            if (Double != null)
+            base.Draw(GameState.SpriteBatch);
+            if (_double != null)
             {
-                Double.Draw(spriteBatch);
+                _double.Draw();
             }
         }
         public new void AddLeft()
         {
-            _velocityX -= _momentum;
+            base.AddLeft();
         }
 
         public new void AddRight()
         {
-            _velocityX += _momentum;
+            base.AddRight();
         }
 
         public new void AddUp()
         {
-            _velocityY -= _momentum;
+            base.AddUp();
         }
 
         public new void AddDown()
         {
-            _velocityY += _momentum;
+            base.AddDown();
         }
 
-        private void CheckLocation(Vector2 location)
+        private Entity CheckLocation(Vector2 location)
         {
-            if (((location.X + Width) > Global.Width && location.X < Global.Width) ||
+            if (((location.X + Width) > GameState.Width && location.X < GameState.Width) ||
                 (location.X < 0 && (location.X + Width > 0)) ||
-                (((location.Y + Height) > Global.Height && (location.X < Global.Height)) ||
+                (((location.Y + Height) > GameState.Height && (location.X < GameState.Height)) ||
                  location.Y < 0 && (location.Y + Height) > 0))
             {
-                var double_location = new Vector2(location.X, location.Y);                
-                if (((location.X + Width) > Global.Width && location.X < Global.Width))
+                var doubleLocation = new Vector2(location.X, location.Y);                
+                if ((location.X + Width) - GameState.Width > 0)
                 {
-                    double_location.X = 0 - (location.X + Width - Width);
+                    doubleLocation.X = location.X - GameState.Width;
                         
                 }
                 if (location.X < 0 && (location.X + Width > 0))
                 {
-                    double_location.X = Global.Width - (location.X + Width);
+                    doubleLocation.X = location.X + GameState.Width;
                 }
-                if ((location.Y + Height) > Global.Height && (location.X < Global.Height))
+                if ((location.Y + Height) - GameState.Height > 0)
                 {
-                    double_location.Y = 0 - (location.Y + Height - Global.Height);
+                    doubleLocation.Y = location.Y - GameState.Height;
                 }
                 if(location.Y < 0 && (location.Y + Height) > 0)
                 {
-                    double_location.Y = Global.Height - (Height + location.Y);
+                    doubleLocation.Y = location.Y + GameState.Height;
                 }
 
-                Double = new Entity(Texture, SpriteBatch, double_location, 0, Height, Width);
-                return;
+                return new Entity(Texture, new Vector2(0, 0), 0f, Height, Width) { Location = doubleLocation};
+                
             }
-            Double = null;            
+            return null;            
         }
 
         private float CheckVelocity(float value)
         {
-            var maxSpeed = _maxSpeed;
+            var maxSpeed = MaxSpeed;
 
             if(value < 0)
             {

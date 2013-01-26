@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using ContentHelper;
 using Microsoft.Xna.Framework;
@@ -46,9 +47,11 @@ namespace Spaceship
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            spriteBatch = GameState.SpriteBatch = new SpriteBatch(GraphicsDevice);
             _loader = new TextureLoader(graphics.GraphicsDevice, false, "Content");
-            ship = new Ship(_loader.FromFile("spaceship.png"), spriteBatch, new Vector2(20, 20), 5, 64, 64);
+            ship = new Ship( _loader.FromFile("spaceship.png"), new Vector2(20, 20), 5, 64, 64);
+            GameState.Entities = new List<Entity>();
+            GameState.GraphicsDevice = graphics.GraphicsDevice;
         }
 
         /// <summary>
@@ -67,8 +70,10 @@ namespace Spaceship
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            Global.SetClock(gameTime);
-
+            GameState.Initialize();
+            GameState.SetClock(gameTime);
+            
+            
             var keys = Keyboard.GetState().GetPressedKeys();
 
             // Allows the game to exit
@@ -95,6 +100,8 @@ namespace Spaceship
 
             // TODO: Add your update logic here
             ship.Update();
+            GameState.Update();            
+
             base.Update(gameTime);
         }
 
@@ -106,31 +113,50 @@ namespace Spaceship
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            Global.SetClock(gameTime);
-
-            // TODO: Add your drawing code here
+            GameState.SetClock(gameTime);
             ship.Draw();
+            GameState.Draw();
             base.Draw(gameTime);
         }
     }
 
-    public static class Global
+    public static class GameState
     {
+        public static GraphicsDevice GraphicsDevice;
         public static GameTime GameTime;
+
+        public static SpriteBatch SpriteBatch { get; set; }
+
+        public static List<Entity> Entities;
 
         public static int Height
         {
-            get { return GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height; }
+            get { return GraphicsDevice.Viewport.Y; }
         }
 
         public static int Width
         {
-            get { return GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width; }
+            get { return GraphicsDevice.Viewport.X; }
         }
+
 
         public static void SetClock(GameTime gameTime)
         {
             GameTime = gameTime;
+        }
+
+        public static void Draw()
+        {
+            Entities.ForEach(e => e.Draw());
+        }
+
+        public static void Update()
+        {
+            Entities.ForEach(e => e.Update());
+        }
+        public static void Initialize()
+        {
+            Entities.Clear();
         }
     }
 }
