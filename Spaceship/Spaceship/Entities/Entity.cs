@@ -7,6 +7,9 @@ namespace Spaceship.Entities
 {
     public class Entity
     {
+
+        #region Lots of properties
+
         protected Texture2D Texture;
 
         public State State;
@@ -15,6 +18,35 @@ namespace Spaceship.Entities
         public float Drag;
         public float MaxSpeed;
         public float Acceleration;
+
+        public float Top
+        {
+            get
+            {
+                return Location.Y;
+            }
+        }
+        public float Bottom
+        {
+            get
+            {
+                return Location.Y + _height;
+            }
+        }
+        public float Left
+        {
+            get
+            {
+                return Location.X;
+            }
+        }
+        public float Right
+        {
+            get
+            {
+                return Location.X + _width;
+            }
+        }
 
         public float Momentum
         {
@@ -53,6 +85,7 @@ namespace Spaceship.Entities
             }
         }
 
+        #endregion
 
         public Entity(Texture2D texture, Vector2 velocity, float mass = 10, int height = 0, int width = 0)
         {
@@ -80,13 +113,16 @@ namespace Spaceship.Entities
 
         public void Draw(SpriteBatch spriteBatch = null)
         {
+            var newSpriteBatch = spriteBatch == null;
             spriteBatch = spriteBatch ?? GameState.SpriteBatch;
 
-            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+            if (newSpriteBatch)
+                spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
 
             spriteBatch.Draw(Texture, new Rectangle((int)Location.X, (int)Location.Y, _width, _height), Color.White);
 
-            spriteBatch.End();
+            if (newSpriteBatch)
+                spriteBatch.End();
         }
 
         public Vector2 Velocity
@@ -98,24 +134,24 @@ namespace Spaceship.Entities
             set { _velocity = value; }
         }
 
-        public void AddLeft()
+        public void AddLeft(float analog = 1)
         {
-            _velocityX -= _velocityX > 0 ? (Acceleration * Drag) : Acceleration;
+            _velocityX -= (_velocityX > 0 ? (Acceleration * Drag) : Acceleration) * analog;
         }
 
-        public void AddRight()
+        public void AddRight(float analog = 1)
         {
-            _velocityX += _velocityX < 0 ? (Acceleration * Drag) : Acceleration;
+            _velocityX += (_velocityX < 0 ? (Acceleration * Drag) : Acceleration) * analog;
         }
 
-        public void AddUp()
+        public void AddUp(float analog = 1)
         {
-            _velocityY -= _velocityY > 0 ? (Acceleration * Drag) : Acceleration;
+            _velocityY -= (_velocityY > 0 ? (Acceleration * Drag) : Acceleration) * analog;
         }
 
-        public void AddDown()
+        public void AddDown(float analog = 1)
         {
-            _velocityY += _velocityY < 0 ? (Acceleration * Drag) : Acceleration;
+            _velocityY += (_velocityY < 0 ? (Acceleration * Drag) : Acceleration) * analog;
         }
 
         private Tuple<float, SpriteEffects> GetAngle()

@@ -4,9 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Spaceship.Entities
 {
     class Ship : Entity
-    {        
-
-        private Entity _double;
+    {
 
         private int Height
         {
@@ -17,6 +15,7 @@ namespace Spaceship.Entities
             get { return _width; }
         }
 
+
         float _velocityX
         {
             get
@@ -25,7 +24,7 @@ namespace Spaceship.Entities
             }
             set
             {
-                if(value.Equals(_velocity.X))
+                if (value.Equals(_velocity.X))
                     return;
 
                 _velocity.X = CheckVelocity(value);
@@ -39,102 +38,76 @@ namespace Spaceship.Entities
             }
             set
             {
-                if(value.Equals(_velocity.Y))
+                if (value.Equals(_velocity.Y))
                     return;
 
                 _velocity.Y = CheckVelocity(value);
             }
         }
+
         public Ship(Texture2D texture, Vector2 velocity, float mass = 10, int height = 0, int width = 0)
             : base(texture, velocity, mass, height, width)
         {
-            
+
         }
 
         public new void Update()
         {
-            base.Update();
+            var newLocation = CheckLocation(Location);
+            if (this.Location == newLocation)
+                base.Update();
+            else
+                this.Location = newLocation;
 
-            if ((_double = CheckLocation(Location)) != null)
-            {
-               _double.Update();
-            }
-                
+
         }
 
-        public new void Draw(SpriteBatch spriteBatch=null)
+        public new void Draw(SpriteBatch spriteBatch = null)
         {
             base.Draw(GameState.SpriteBatch);
-            if (_double != null)
+        }
+
+        private Vector2 CheckLocation(Vector2 location)
+        {
+            if (GameState.OutOfBounds(this))
             {
-                _double.Draw();
+                var doubleLocation = new Vector2(location.X, location.Y);
+                if (Left > GameState.Width)
+                {
+                    doubleLocation.X = 0 - Width;
+                }
+                if (Right < 0)
+                {
+                    doubleLocation.X = GameState.Width;
+                }
+                if (Top > GameState.Height)
+                {
+                    doubleLocation.Y = 0 - Height;
+                }
+                if (Bottom < 0)
+                {
+                    doubleLocation.Y = GameState.Height;
+                }
+
+                return doubleLocation;
+
             }
-        }
-        public new void AddLeft()
-        {
-            base.AddLeft();
-        }
-
-        public new void AddRight()
-        {
-            base.AddRight();
-        }
-
-        public new void AddUp()
-        {
-            base.AddUp();
-        }
-
-        public new void AddDown()
-        {
-            base.AddDown();
-        }
-
-        private Entity CheckLocation(Vector2 location)
-        {
-            if (((location.X + Width) > GameState.Width && location.X < GameState.Width) ||
-                (location.X < 0 && (location.X + Width > 0)) ||
-                (((location.Y + Height) > GameState.Height && (location.X < GameState.Height)) ||
-                 location.Y < 0 && (location.Y + Height) > 0))
-            {
-                var doubleLocation = new Vector2(location.X, location.Y);                
-                if ((location.X + Width) - GameState.Width > 0)
-                {
-                    doubleLocation.X = location.X - GameState.Width;
-                        
-                }
-                if (location.X < 0 && (location.X + Width > 0))
-                {
-                    doubleLocation.X = location.X + GameState.Width;
-                }
-                if ((location.Y + Height) - GameState.Height > 0)
-                {
-                    doubleLocation.Y = location.Y - GameState.Height;
-                }
-                if(location.Y < 0 && (location.Y + Height) > 0)
-                {
-                    doubleLocation.Y = location.Y + GameState.Height;
-                }
-
-                return new Entity(Texture, new Vector2(0, 0), 0f, Height, Width) { Location = doubleLocation};
-                
-            }
-            return null;            
+            return location;
         }
 
         private float CheckVelocity(float value)
         {
             var maxSpeed = MaxSpeed;
 
-            if(value < 0)
+            if (value < 0)
             {
                 maxSpeed *= -1;
-                if(value < maxSpeed)
+                if (value < maxSpeed)
                     return maxSpeed;
                 return value;
             }
 
-            if(value > maxSpeed)
+            if (value > maxSpeed)
                 return maxSpeed;
             return value;
         }

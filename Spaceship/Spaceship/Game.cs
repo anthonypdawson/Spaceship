@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Spaceship.Entities;
+using System;
 
 namespace Spaceship
 {
@@ -17,6 +18,7 @@ namespace Spaceship
         SpriteBatch spriteBatch;
         TextureLoader _loader;
         Ship ship;
+        SpriteFont _font;
 
         public Game()
         {
@@ -24,6 +26,7 @@ namespace Spaceship
             Content.RootDirectory = "Content";
 
             IsFixedTimeStep = false;
+
 
         }
 
@@ -49,9 +52,10 @@ namespace Spaceship
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = GameState.SpriteBatch = new SpriteBatch(GraphicsDevice);
             _loader = new TextureLoader(graphics.GraphicsDevice, false, "Content");
-            ship = new Ship( _loader.FromFile("spaceship.png"), new Vector2(20, 20), 5, 64, 64);
+            ship = new Ship(_loader.FromFile("spaceship.png"), new Vector2(20, 20), 5, 64, 64);
             GameState.Entities = new List<Entity>();
             GameState.GraphicsDevice = graphics.GraphicsDevice;
+            _font = Content.Load<SpriteFont>("Text");
         }
 
         /// <summary>
@@ -72,35 +76,35 @@ namespace Spaceship
         {
             GameState.Initialize();
             GameState.SetClock(gameTime);
-            
-            
-            var keys = Keyboard.GetState().GetPressedKeys();
 
+
+            var keys = Keyboard.GetState().GetPressedKeys();
+            var buttons = GamePad.GetState(0).ThumbSticks;
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keys.Contains(Keys.Escape))
                 this.Exit();
 
 
-            if (keys.Contains(Keys.Left))
+            if (buttons.Left.X < 0 || keys.Contains(Keys.Left))
             {
-                ship.AddLeft();
+                ship.AddLeft(buttons.Left.X + 1);
             }
-            if (keys.Contains(Keys.Right))
+            if (buttons.Left.X > 0 || keys.Contains(Keys.Right))
             {
-                ship.AddRight();
+                ship.AddRight(buttons.Left.X);
             }
-            if (keys.Contains(Keys.Up))
+            if (buttons.Left.Y > 0 || keys.Contains(Keys.Up))
             {
-                ship.AddUp();
+                ship.AddUp(buttons.Left.Y);
             }
-            if (keys.Contains(Keys.Down))
+            if (buttons.Left.Y < 0 || keys.Contains(Keys.Down))
             {
-                ship.AddDown();
+                ship.AddDown(buttons.Left.Y + 1);
             }
 
             // TODO: Add your update logic here
             ship.Update();
-            GameState.Update();            
+            GameState.Update();
 
             base.Update(gameTime);
         }
@@ -114,7 +118,20 @@ namespace Spaceship
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             GameState.SetClock(gameTime);
-            ship.Draw();
+            spriteBatch.Begin();
+            spriteBatch.DrawString(_font,
+                String.Format("L: {0}, R: {1}, T: {2}, B: {3}, OOB: {4}",
+                Math.Floor(ship.Left), Math.Floor(ship.Right), Math.Floor(ship.Top), Math.Floor(ship.Bottom), GameState.OutOfBounds(ship)), new Vector2(100, 100), Color.Black);
+            spriteBatch.DrawString(_font,
+                String.Format("Acceleration: {0}, Momentum: {1}", ship.Acceleration, ship.Momentum),
+                new Vector2(100, 200), Color.Black);
+
+            //spriteBatch.DrawString(_font,
+            //    String.Format("L: {0}, R: {1}, T: {2}, B: {3}",
+            //    0, GameState.Width, 0, GameState.Height), new Vector2(100, 200), Color.Black);
+
+            ship.Draw(spriteBatch);
+            spriteBatch.End();
             GameState.Draw();
             base.Draw(gameTime);
         }
@@ -131,14 +148,18 @@ namespace Spaceship
 
         public static int Height
         {
-            get { return GraphicsDevice.Viewport.Y; }
+            get { return GraphicsDevice.Viewport.Height; }
         }
 
         public static int Width
         {
-            get { return GraphicsDevice.Viewport.X; }
+            get { return GraphicsDevice.Viewport.Width; }
         }
 
+        public static Boolean OutOfBounds(Entity entity)
+        {
+            return entity.Right < 0 || entity.Bottom < 0 || entity.Left > Width || entity.Top > Height;
+        }
 
         public static void SetClock(GameTime gameTime)
         {
