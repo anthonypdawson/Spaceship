@@ -53,7 +53,10 @@ namespace Spaceship
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = GameState.SpriteBatch = new SpriteBatch(GraphicsDevice);
             _loader = new TextureLoader(graphics.GraphicsDevice, false, "Content");
-            ship = new Ship(_loader.FromFile("spaceship.png"), new Vector2(20, 20), 5, 64, 64);
+            ship = new Ship(_loader.FromFile("spaceship.png"), new Vector2(20, 20), 5, 64, 64)
+                {
+                    Location = new Vector2(50)
+                };
             GameState.Entities = new List<Entity>();
             GameState.GraphicsDevice = graphics.GraphicsDevice;
             _font = Content.Load<SpriteFont>("Text");
