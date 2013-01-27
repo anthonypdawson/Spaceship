@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -11,13 +10,35 @@ namespace Spaceship.Entities
         #region Lots of properties
 
         protected Texture2D Texture;
+        
+        public Vector2 Origin
+        {
+            get
+            {
+                return new Vector2(Texture.Width / 2, Texture.Height / 2);
+                //return new Vector2(_width / 2f, _height / 2f);
+            }
+        }
 
         public State State;
-        protected Vector2 _velocity;
+        public Vector2 Velocity;
+        public double Rotation = 0;
 
-        public float Drag;
-        public float MaxSpeed;
-        public float Acceleration;
+        public float Mass;
+        public float MaxSpeed = 25;
+        public Vector2 Power;
+
+        public Vector2 Force
+        {
+            get { return Power;  /* Direction * Power; */ }
+        }
+
+        public Vector2 Acceleration
+        {
+            get { return Force / Mass; }
+        }
+
+        public Vector2 Direction;
 
         public float Top
         {
@@ -48,56 +69,25 @@ namespace Spaceship.Entities
             }
         }
 
-        public float Momentum
-        {
-            get
-            {
-                return new[]
-                {
-                    _velocity.X,
-                    _velocity.Y
-                }.Average() * Mass;
-            }
-        }
-        public float Mass;
+
+
         protected int _height, _width;
 
         public Vector2 Location { get; set; }
 
-        float _velocityX
-        {
-            get
-            {
-                return _velocity.X;
-            }
-            set { _velocity.X = value; }
-        }
-
-        float _velocityY
-        {
-            get
-            {
-                return _velocity.Y;
-            }
-            set
-            {
-                _velocity.Y = value;
-            }
-        }
 
         #endregion
 
-        public Entity(Texture2D texture, Vector2 velocity, float mass = 10, int height = 0, int width = 0)
+        public Entity(Texture2D texture, Vector2 velocity, float mass = 50f, int height = 0, int width = 0)
         {
             Texture = texture;
-            SetVelocity(velocity);
 
             _height = height == 0 ? Texture.Height : height;
             _width = width == 0 ? Texture.Width : width;
-            MaxSpeed = 100;
+            MaxSpeed = 25;
+            Power = new Vector2(0f);
             Mass = mass;
-            Acceleration = 4f;
-            Drag = 3f;
+            Direction = new Vector2(0);
         }
 
         public Entity(Texture2D texture, SpriteBatch spriteBatch)
@@ -108,10 +98,10 @@ namespace Spaceship.Entities
 
         public void Update()
         {
-            UpdateLocation(Velocity);
+            UpdateLocation();
         }
 
-        public void Draw(SpriteBatch spriteBatch = null)
+        public void Draw(SpriteBatch spriteBatch)
         {
             var newSpriteBatch = spriteBatch == null;
             spriteBatch = spriteBatch ?? GameState.SpriteBatch;
@@ -119,39 +109,56 @@ namespace Spaceship.Entities
             if (newSpriteBatch)
                 spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
 
-            spriteBatch.Draw(Texture, new Rectangle((int)Location.X, (int)Location.Y, _width, _height), Color.White);
-
+            
+            DoDraw(spriteBatch);
+           
             if (newSpriteBatch)
                 spriteBatch.End();
         }
 
-        public Vector2 Velocity
+        
+        private void DoDraw(SpriteBatch spriteBatch)
         {
-            get
-            {
-                return _velocity * (float)GameState.GameTime.ElapsedGameTime.TotalSeconds;
-            }
-            set { _velocity = value; }
+            spriteBatch.Draw(Texture, new Rectangle((int)Location.X, (int)Location.Y, _width, _height),null, Color.White, (float)(Rotation  + (Math.PI*2.0f)), Origin, SpriteEffects.None, 0);
         }
+
+        
 
         public void AddLeft(float analog = 1)
         {
-            _velocityX -= (_velocityX > 0 ? (Acceleration * Drag) : Acceleration) * analog;
+            if (Acceleration.X > (0 - MaxSpeed))
+            {
+                Power.X += (0 - analog);
+            }
+            UpdateVelocity();
         }
 
         public void AddRight(float analog = 1)
         {
-            _velocityX += (_velocityX < 0 ? (Acceleration * Drag) : Acceleration) * analog;
+            if (Acceleration.X < MaxSpeed)
+            {
+                Power.X += analog;
+            }
+            UpdateVelocity();
         }
 
         public void AddUp(float analog = 1)
         {
-            _velocityY -= (_velocityY > 0 ? (Acceleration * Drag) : Acceleration) * analog;
+            if (Acceleration.Y > (0 - MaxSpeed))
+            {
+                Power.Y += (0 - analog);
+            }
+            UpdateVelocity();
+            
         }
 
         public void AddDown(float analog = 1)
         {
-            _velocityY += (_velocityY < 0 ? (Acceleration * Drag) : Acceleration) * analog;
+            if (Acceleration.Y < MaxSpeed)
+            {
+                Power.Y += analog;
+            }
+            UpdateVelocity();
         }
 
         private Tuple<float, SpriteEffects> GetAngle()
@@ -159,14 +166,21 @@ namespace Spaceship.Entities
             return new Tuple<float, SpriteEffects>(1, SpriteEffects.None);
         }
 
-        private void SetVelocity(Vector2 velocity)
+        private void UpdateVelocity()
         {
-            _velocity = velocity;
+            //_velocity += Acceleration*new Vector2((float) GameState.GameTime.ElapsedGameTime.TotalMilliseconds);
+            
+            var calcVel = Acceleration * new Vector2((float)GameState.GameTime.ElapsedGameTime.TotalMilliseconds);
+
+                Velocity.X = calcVel.X;
+
+                Velocity.Y = calcVel.Y;
+
         }
 
-        private void UpdateLocation(Vector2 velocity)
+        private void UpdateLocation()
         {
-            Location += velocity;
+            Location += Velocity * new Vector2((float)GameState.GameTime.ElapsedGameTime.TotalSeconds);
         }
 
 

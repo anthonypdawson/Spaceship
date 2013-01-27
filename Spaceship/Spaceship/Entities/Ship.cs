@@ -1,10 +1,13 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Spaceship.Entities
 {
     class Ship : Entity
     {
+
+        
 
         private int Height
         {
@@ -16,39 +19,20 @@ namespace Spaceship.Entities
         }
 
 
-        float _velocityX
-        {
-            get
-            {
-                return _velocity.X;
-            }
-            set
-            {
-                if (value.Equals(_velocity.X))
-                    return;
-
-                _velocity.X = CheckVelocity(value);
-            }
-        }
-        float _velocityY
-        {
-            get
-            {
-                return _velocity.Y;
-            }
-            set
-            {
-                if (value.Equals(_velocity.Y))
-                    return;
-
-                _velocity.Y = CheckVelocity(value);
-            }
-        }
-
         public Ship(Texture2D texture, Vector2 velocity, float mass = 10, int height = 0, int width = 0)
             : base(texture, velocity, mass, height, width)
         {
 
+        }
+
+        public void Update(Vector2 mousePosition)
+        {
+            Vector2 direction;
+            direction.X = mousePosition.X - (Location.X + Width / 2f);
+            direction.Y = mousePosition.Y - (Location.Y + Height / 2f);
+            
+            Rotation = (float)Math.Atan2(direction.Y, direction.X);
+            Update();
         }
 
         public new void Update()
