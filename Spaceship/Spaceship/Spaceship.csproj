@@ -110,6 +110,7 @@
   <ItemGroup>
     <Compile Include="Entities\AnimatedSprite.cs" />
     <Compile Include="Entities\Entity.cs" />
+    <Compile Include="Entities\Projectile.cs" />
     <Compile Include="Entities\Ship.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="IO\PlayerInput.cs" />

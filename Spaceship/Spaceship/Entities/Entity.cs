@@ -10,7 +10,7 @@ namespace Spaceship.Entities
         #region Lots of properties
 
         protected Texture2D Texture;
-        
+
         public Vector2 Origin
         {
             get
@@ -78,6 +78,12 @@ namespace Spaceship.Entities
 
         #endregion
 
+        public Entity(Texture2D texture, Vector2 velocity, Vector2 location, float mass = 50f, int height = 0, int width = 0)
+            : this(texture, velocity, mass, height, width)
+        {
+            Location = location;
+        }
+
         public Entity(Texture2D texture, Vector2 velocity, float mass = 50f, int height = 0, int width = 0)
         {
             Texture = texture;
@@ -109,26 +115,28 @@ namespace Spaceship.Entities
             if (newSpriteBatch)
                 spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
 
-            
+
             DoDraw(spriteBatch);
-           
+
             if (newSpriteBatch)
                 spriteBatch.End();
         }
 
-        
+
         private void DoDraw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Texture, new Rectangle((int)Location.X, (int)Location.Y, _width, _height),null, Color.White, (float)(Rotation  + (Math.PI*2.0f)), Origin, SpriteEffects.None, 0);
+
+            spriteBatch.Draw(Texture, new Rectangle((int)Location.X, (int)Location.Y, _width, _height), null, Color.White, (float)(Rotation + (Math.PI * 2.0f)), Origin, SpriteEffects.None, 0);
+
         }
 
-        
+
 
         public void AddLeft(float analog = 1)
         {
             if (Acceleration.X > (0 - MaxSpeed))
             {
-                Power.X += (0 - analog);
+                Power.X -= analog;
             }
             UpdateVelocity();
         }
@@ -146,10 +154,10 @@ namespace Spaceship.Entities
         {
             if (Acceleration.Y > (0 - MaxSpeed))
             {
-                Power.Y += (0 - analog);
+                Power.Y -= analog;
             }
             UpdateVelocity();
-            
+
         }
 
         public void AddDown(float analog = 1)
@@ -169,12 +177,12 @@ namespace Spaceship.Entities
         private void UpdateVelocity()
         {
             //_velocity += Acceleration*new Vector2((float) GameState.GameTime.ElapsedGameTime.TotalMilliseconds);
-            
+
             var calcVel = Acceleration * new Vector2((float)GameState.GameTime.ElapsedGameTime.TotalMilliseconds);
 
-                Velocity.X = calcVel.X;
+            Velocity.X = calcVel.X;
 
-                Velocity.Y = calcVel.Y;
+            Velocity.Y = calcVel.Y;
 
         }
 

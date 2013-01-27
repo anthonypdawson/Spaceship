@@ -19,7 +19,7 @@ namespace Spaceship
         TextureLoader _loader;
         Ship ship;
         SpriteFont _font;
-        private Dictionary<String, String> log; 
+        private Dictionary<String, String> log;
         private int updateCount = 0;
         public Game()
         {
@@ -78,10 +78,9 @@ namespace Spaceship
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            
-            GameState.Initialize();
+
             GameState.SetClock(gameTime);
-            
+
 
             var keys = Keyboard.GetState().GetPressedKeys();
             var buttons = GamePad.GetState(0).ThumbSticks;
@@ -90,36 +89,47 @@ namespace Spaceship
                 this.Exit();
 
 
-            if (buttons.Left.X < 0 || keys.Contains(Keys.Left))
+            if (buttons.Left.X < 0 || buttons.Left.X > 0)
             {
-                var analogVal = buttons.Left.X;
-                ship.AddLeft(analogVal.Equals(0.0f) ? 1 : analogVal + 1);
+                ship.AddRight(buttons.Left.X);
             }
-            if (buttons.Left.X > 0 || keys.Contains(Keys.Right))
+            if (keys.Contains(Keys.Left))
             {
-                var analogVal = buttons.Left.X;
-                ship.AddRight(analogVal.Equals(0.0f) ? 1 : analogVal);
-            }
-            if (buttons.Left.Y > 0 || keys.Contains(Keys.Up))
-            {
-                var analogVal = buttons.Left.Y;
-                ship.AddUp(analogVal.Equals(0.0f) ? 1 : analogVal);
-            }
-            if (buttons.Left.Y < 0 || keys.Contains(Keys.Down))
-            {
-                var analogVal = buttons.Left.Y;
-                ship.AddDown(analogVal.Equals(0.0f) ? 1 : analogVal + 1);
+                ship.AddLeft(1);
             }
 
+            if (keys.Contains(Keys.Right))
+            {
+                ship.AddRight(1);
+            }
+
+            if (buttons.Left.Y > 0 || buttons.Left.Y < 0) { ship.AddUp(buttons.Left.Y); }
+            if (keys.Contains(Keys.Up))
+            {
+                ship.AddUp(1);
+            }
+            if (keys.Contains(Keys.Down))
+            {
+                ship.AddDown(1);
+            }
+
+
             var mouseState = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
-            if (!buttons.Right.Y.Equals(0)|| !buttons.Right.X.Equals(0))
+            if (!buttons.Right.Y.Equals(0) || !buttons.Right.X.Equals(0))
             {
                 mouseState.X += buttons.Right.X;
                 mouseState.Y += buttons.Right.Y;
             }
 
+            if (GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.RightShoulder))
+            {
+                if (ship.projectiles.Count() == 0)
+                    ship.Shoot(_loader.FromFile("laser.png"), mouseState);
+            }
+
+
             // TODO: Add your update logic here
-            ship.Update(mouseState);
+            ship.UpdateGamepad(buttons.Right);
             GameState.Update();
 
             base.Update(gameTime);
@@ -136,7 +146,7 @@ namespace Spaceship
 
             GameState.SetClock(gameTime);
             spriteBatch.Begin();
-            if (updateCount < 2 || updateCount%10 == 0)
+            if (updateCount < 2 || updateCount % 10 == 0)
             {
                 log = new Dictionary<String, String>()
                     {
@@ -151,17 +161,15 @@ namespace Spaceship
                         {"Acceleration", ship.Acceleration.ToString()},
                         {"Velocity", ship.Velocity.ToString()},
                         {"Time", GameState.GameTime.ElapsedGameTime.TotalMilliseconds.ToString()},
-                        {"Origin", ship.Origin.ToString()}
+                        {"Origin", ship.Origin.ToString()},
+                        {"Rotation", ship.Rotation.ToString()},
+                        {"Projected Rotation", ship.projectedRotation.ToString()}
                     };
 
             }
             spriteBatch.DrawString(_font, String.Join("\n", log.Select(k => String.Format("{0} = {1}, ", k.Key, k.Value))),
                                        new Vector2(100, 100), Color.Black);
 
-            
-            //spriteBatch.DrawString(_font,
-            //    String.Format("L: {0}, R: {1}, T: {2}, B: {3}",
-            //    0, GameState.Width, 0, GameState.Height), new Vector2(100, 200), Color.Black);
 
             ship.Draw(spriteBatch);
             spriteBatch.End();
@@ -201,7 +209,9 @@ namespace Spaceship
 
         public static void Draw()
         {
+            SpriteBatch.Begin();
             Entities.ForEach(e => e.Draw(SpriteBatch));
+            SpriteBatch.End();
         }
 
         public static void Update()
